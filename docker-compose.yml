@@ -1,0 +1,86 @@
+version: "3.9"
+
+services:
+  appserver:
+    container_name: appserver
+    image: nginx:alpine
+    environment:
+      TZ: "Europe/Moscow"
+    volumes:
+      - ".:/var/www/html/"
+      - "./config/infrastructure/nginx/conf.d/:/etc/nginx/conf.d/"
+      - "./config/infrastructure/nginx/ssl/:/etc/nginx/ssl/"
+      - "./config/infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf"
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - credit_network
+
+  app:
+    image: taygeta/php:8.3
+    container_name: app
+    env_file:
+      - .env.local
+    environment:
+      TZ: "Europe/Moscow"
+      PHP_IDE_CONFIG: "serverName=docker"
+      XDG_CACHE_HOME: "/var/www/html/var/"
+      COMPOSER_HTACCESS_PROTECT: "0"
+      YARN_CACHE_FOLDER: "/var/www/html/var/"
+      NLS_LANG: "Russian_Russia.UTF8"
+    volumes:
+      - ".:/var/www/html/"
+      - "./config/infrastructure/php/php.ini:/usr/local/etc/php/php.ini"
+    depends_on:
+      - postgresql
+      - queue
+    networks:
+      - credit_network
+    extra_hosts:
+      - "registry.yarnpkg.com:104.16.16.35"
+
+  postgresql:
+    container_name: postgresql
+    image: postgres:15
+    restart: always
+    env_file:
+      - .env.local
+    environment:
+      POSTGRES_USER: "${DB_USER:-postgres}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-password}"
+      POSTGRES_DB: "${DB_NAME:-app_db}"
+      TZ: "Europe/Moscow"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - credit_network
+
+  queue:
+    container_name: queue
+    image: "rabbitmq:3.12-management"
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      TZ: "Europe/Moscow"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - credit_network
+    volumes:
+      - queue_data:/var/lib/rabbitmq
+
+networks:
+  credit_network:
+    driver: bridge
+
+volumes:
+  data:
+  postgresql_data:
+  queue_data:
