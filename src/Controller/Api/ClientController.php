@@ -261,6 +261,57 @@ class ClientController extends AbstractController
         return $this->json(['result' => $result]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/clients/{clientId}/credit/{creditId}",
+     *     summary="Assign a credit to a client",
+     *     description="Adds a credit to the specified client and returns a success message.",
+     *     operationId="assignCreditToClient",
+     *     tags={"Credits"},
+     *
+     *     @OA\Parameter(
+     *         name="clientId",
+     *         in="path",
+     *         required=true,
+     *         description="The ID of the client",
+     *         @OA\Schema(type="integer", example=3)
+     *     ),
+     *     @OA\Parameter(
+     *         name="creditId",
+     *         in="path",
+     *         required=true,
+     *         description="The ID of the credit",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Credit successfully assigned to the client",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Credit has been added successfully to this client")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid request or missing parameters",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Invalid client ID or credit ID")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="Client or credit not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Client not found")
+     *         )
+     *     )
+     * )
+     */
     public function giveCredit(int $clientId, int $creditId): JsonResponse
     {
         try {
