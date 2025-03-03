@@ -25,6 +25,8 @@ services:
 
     App\Normalizer\ClientNormalizer:
         tags: [ serializer.normalizer ]
+    App\Normalizer\CreditNormalizer:
+        tags: [ serializer.normalizer ]
     Nelmio\ApiDocBundle\Render\RenderOpenApi:
         arguments:
             $generatorLocator: '@service_container'

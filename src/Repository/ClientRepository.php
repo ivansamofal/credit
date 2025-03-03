@@ -21,12 +21,16 @@ class ClientRepository extends ServiceEntityRepository
 
     public function save(Client $entity, bool $flush = false, bool $update = false): void
     {
-        if (!$update) {
-            $dbClient = $this->findOneBy(['email' => $entity->getEmail(), 'ssn' => $entity->getSsn()]);
+        $criteria = ['email' => $entity->getEmail(), 'ssn' => $entity->getSsn()];
 
-            if ($dbClient) {
-                throw new \Exception('Client with this email or SSN already registered');
-            }
+        if (!$update) {
+            $criteria = ['ssn' => $entity->getSsn()];
+        }
+
+        $dbClient = $this->findOneBy($criteria);
+
+        if ($dbClient) {
+            throw new \Exception('Client with this email or SSN already registered');
         }
 
         $this->getEntityManager()->persist($entity);

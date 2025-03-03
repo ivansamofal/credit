@@ -8,6 +8,7 @@ use App\Enum\StateEnum;
 use App\Factory\ClientFactory;
 use App\Helper\ClientHelper;
 use App\Repository\ClientRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 class ClientService
@@ -20,6 +21,7 @@ class ClientService
     public function __construct(
         private readonly ClientRepository $clientRepository,
         private readonly NotificationService $notificationService,
+        private readonly LoggerInterface $logger,
     ) {}
 
     public function create(array $data): Client
@@ -87,7 +89,7 @@ class ClientService
         return true;
     }
 
-    public function giveCredit(Client $client, Credit $credit)
+    public function giveCredit(Client $client, Credit $credit): void
     {
         if (!$this->checkPermissionForCredit($client)) {
             throw new Exception('Client not allowed to get a credit');
@@ -95,7 +97,10 @@ class ClientService
 
         $this->clientRepository->addCreditToClient($client, $credit);
 
-//        $this->notificationService->sendEmail();//TODO we can add choosing of notification method in client settings
+        try {
+            $this->notificationService->sendEmail($client);
+        } catch (\Throwable $e) {
+            $this->logger->error("Error during sending email: {$e->getMessage()}");
+        }
     }
-
 }

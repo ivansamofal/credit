@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Credit;
+use App\Factory\CreditFactory;
 use App\Repository\CreditRepository;
 
 class CreditService
@@ -18,5 +19,18 @@ class CreditService
         }
 
         return $credit;
+    }
+
+    public function getList(): array
+    {
+        return $this->creditRepository->findAll();
+    }
+
+    public function create(array $data): Credit
+    {
+        $creditEntity = CreditFactory::create($data);
+        $this->creditRepository->save($creditEntity, true);
+
+        return $creditEntity;
     }
 }
